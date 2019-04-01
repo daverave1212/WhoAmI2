@@ -4,24 +4,33 @@ const express	= require('express')
 const cors		= require('cors')
 const app		= express()
 const path		= require('path')
-const utils		= require('/utils')
+const utils		= require('./utils.js')
 const router	= express.Router()
 var   port		= process.env.PORT || 3000
 app.use(cors())	// Makes it cross-origin something
 
-const FAIL		= false;
-const OK		= true;
+const FAIL		= false
+const OK		= true
 
+var hasGameStarted = false
+var hasGameEnded = false
 var Players = []
 
-// Add player
-app.post('/game', (req, res)=>{
-	if(req.query.name == null){
+Players = [
+	{name:'Dave', entry:'Parmezaneer'},
+	{name:'Ana', entry:'Hunter'},
+	{name:'Calin', entry:'Marmotar'},
+	{name:'Mircea', entry:'Pirat'}
+]
+
+// Add player and entry
+app.post('/game/addplayer', (req, res)=>{
+	if(req.query.name == null || req.query.entry == null){
 		res.send(FAIL)
 	} else {
 		let newPlayer = {
 			name : req.query.name,
-			entry : null,
+			entry : req.query.entry,
 			role : null
 		}
 		Players.push(newPlayer)
@@ -29,34 +38,74 @@ app.post('/game', (req, res)=>{
 	}
 })
 
-// Add entry
-app.put('/game', (req, res)=>{
-	if(req.query.name == null || req.query.entry == null){
-		res.send(FAIL)
-	} else {
-		let playerIndex = utils.findInArray(Players, 'name', req.query.name);
-		if(playerIndex == null){
-			res.send(FAIL)
-		} else {
-			Players[index].entry = req.query.entry
-			res.send(OK)
-		}
-	}
-})
-
 // Start game
-app.post('start'), (req, res)=>{
-	if(Players.length < 2){
+app.post('/game/start', (req, res)=>{
+	if(hasGameStarted || hasGameEnded){
+		res.send(FAIL)
+	} else if(Players.length < 2){
 		res.send(FAIL)
 	} else {
+		console.log("Starting game")
 		for(let i = 1; i<Players.length; i++){
 			Players[i].role = Players[i-1].entry
 		}
 		Players[0].role = Players[Players.length - 1].entry
+		hasGameStarted = true
+		hasGameEnded = false
 		res.send(OK)
 	}
 })
 
+//app.post('/game/whoami', (req, res)=>{
+//	if(req.query.name == null || !hasGameStarted){
+//		res.send(FAIL)
+//	} else {
+//		let otherPlayers = []
+//		for(let i = 0; i<Players.length; i++){
+//			if(Players[i].name != req.query.name){
+//				otherPlayers.push({
+//					name : Players[i].name,
+//					role : Players[i].role
+//				})
+//			}
+//		}
+//		res.send(otherPlayers)
+//		console.log(otherPlayers)
+//	}
+//})
+
+app.post('/game/reset', (req, res)=>{
+	Players = []
+	hasGameStarted = false
+	res.send(OK)
+})
+   .get('/game/reset', (req, res)=>{
+	Players = []
+	hasGameStarted = false
+	res.send(OK)
+})
+
+app.get('/game/ready', (req, res)=>{
+	res.send(hasGameStarted)
+})
+   .post('/game/ready', (req, res)=>{
+	res.send(hasGameStarted)
+})
+	
+app.get('/game/ended', (req, res)=>{
+	res.send(hasGameEnded)
+})
+   .post('/game/ended', (req, res)=>{
+	res.send(hasGameEnded)
+})
+	
+
+
+app.get('/info', (req, res)=>{
+	res.send(Players)
+}) .post('/info', (req, res)=>{
+	res.send(Players)
+})
 
 app.listen(port, ()=>{
 	console.log(`Listening on port ${port}...`)

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<head>
+	<script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<style>
+		input{
+			width: 400px;
+		}
+		button{
+			display: block;
+		}
+	</style>
+</head>
+<body>
+	<input id = "Type" value = "post">
+	<br>
+	<input id = "Url" value = "http://localhost:3000" width="600px">
+	<br>
+	<input id = "Params" value = "?name=" width="600px">
+	
+	<script>
+		
+		function objectToURLParameters(obj){
+			url = Object.keys(obj).map(function(k) {
+				return encodeURIComponent(k) + '=' + encodeURIComponent(obj[k])
+			}).join('&')
+			return url
+		}
+		
+		function submit(_url, data, type){
+			if(type == null){
+				type = 'get'
+			}
+			$.ajax({
+				type : type,
+				url : _url + '?' + objectToURLParameters(data),
+				data : {},
+				success : function(response){
+					alert(response);
+				}
+			});
+		}
+		
+		function addPlayer(){
+			let _name = prompt("Name?")
+			submit('http://localhost/game', {name:_name}, 'post')
+		}
+		
+		function addEntry(){
+			let _name = prompt("Name?")
+			submit('http://localhost/game', {name:_name}, 'post')
+		}
+		
+		function go(){
+			$.ajax({
+				type : document.getElementById('Type').value,
+				url : document.getElementById('Url').value + document.getElementById('Params').value,
+				data : {},
+				success : function(response){
+					alert(response);
+				}
+			});
+		}
+		
+		function a(){
+			
+		}
+	</script>
+	<button onclick = "go()">Add Player</button>
+</body>
